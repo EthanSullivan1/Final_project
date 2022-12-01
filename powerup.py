@@ -1,32 +1,33 @@
-import pygame
 import random
 
-class Health_power:
-    """A class to manage the ship"""
-    def __init__(self, HVM_game):
-        """Initialize the ship and set its starting position."""
-        self.screen = HVM_game.screen
-        self.screen_rect = HVM_game.screen.get_rect()
-        #Load the icon image and get its rect.
-        self.image = pygame.image.load('images/health.png')
-        self.rect = self.image.get_rect()
+import pygame
+from pygame.sprite import Sprite
 
-        #Start each new ship at the center of the screen
-        self.rect.center = self.screen_rect.center
-        #store a decimal value for the ship's horizontal position
+class Health_power(Sprite):
+    """Mange Bullets"""
+    def __init__(self, HVM_game):
+        """Create a bullet"""
+        super().__init__()
+        self.screen = HVM_game.screen
+
+        #create a bullet rect at the top the screen
+
+        self.default = pygame.image.load("images/health.png")
+        self.image = pygame.transform.scale(self.default, (50,50))
+        self.rect = self.image.get_rect()
+        self.rect.top = HVM_game.helo.rect.top
+        self.rect.x = random.randint(0,1000)
+        self.rect.y = 0
+
+        #store the power-ups position
+        self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
-        # movement flag
-        self.moving_down = False
-
     def update(self):
-        """Update moving the ships position based on the movement flag"""
-        #updates the ships x/y value, not the rect
-        if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
-            self.y += 1.5
-        #update the rect object from self.x
-        self.rect.x = random.randint
+        """move the bullet up the screen"""
+        self.y += 1
         self.rect.y = self.y
-    def blitme(self):
-        """Draw the ship at its current location"""
+
+
+    def draw_powerup(self):
         self.screen.blit(self.image, self.rect)

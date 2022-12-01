@@ -1,5 +1,7 @@
 import sys
 import pygame
+from time import sleep
+import random
 from settings import Settings
 from castle import Castle
 from gamestats import GameStats
@@ -10,7 +12,7 @@ from tank import Tank
 from round import Round
 from health_bar_lable import Lable
 from tank_lives_lable import TLable
-
+from powerup import Health_power
 class HVM:
     def __init__(self):
         pygame.init()
@@ -27,6 +29,7 @@ class HVM:
         self.bullets = pygame.sprite.Group()
         self.rounds = pygame.sprite.Group()
         self.round = Round(self)
+        self.power_up = Health_power(self)
 
 
 
@@ -40,8 +43,10 @@ class HVM:
             if self.stats.game_active:
                 self.helo.update()
                 self.tank.update()
+                self.power_up.update()
                 self._update_bullets()
                 self._update_rounds()
+
             self.update_screen()
     def _update_bullets(self):
         self.bullets.update()
@@ -52,7 +57,7 @@ class HVM:
             if bullet.rect.colliderect(self.tank.rect.x, self.tank.rect.y, 82, 60):
                 self.tank.tank_health -= 10
                 self.bullets.remove(bullet)
-                print(f"{self.tank.tank_health   }")
+                print(f"{self.tank.tank_health}")
 
     def _update_rounds(self):
         self.rounds.update()
@@ -165,6 +170,7 @@ class HVM:
             round.draw_bullet()
         self.advanced_health()
         self.tank.draw_lives()
+        self.power_up.draw_powerup()
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 
