@@ -30,6 +30,7 @@ class HVM:
         self.rounds = pygame.sprite.Group()
         self.round = Round(self)
         self.power_up = Health_power(self)
+        self.power_ups = pygame.sprite.Group()
 
 
 
@@ -42,8 +43,8 @@ class HVM:
             self.check_events()
             if self.stats.game_active:
                 self.helo.update()
+                self._check_helo_PU_collissions()
                 self.tank.update()
-                self.power_up.update()
                 self._update_bullets()
                 self._update_rounds()
 
@@ -144,6 +145,27 @@ class HVM:
         pygame.draw.rect(self.screen,(0,255,0), health_bar_rect)
         pygame.draw.rect(self.screen, transition_color, transition_bar_rect)
         pygame.draw.rect(self.screen, (0, 0, 0),(10,45,self.castle.health_bar_length,25),4)
+    def make_power_up(self):
+        power_up = Health_power(self)
+        self.power_up.rect.x = random.randint(0, 1000)
+        self.power_up.rect.y = 0
+        self.power_ups.add(power_up)
+    def _check_helo_PU_collissions(self):
+        PU_collisions = pygame.sprite.spritecollideany(self.helo, self.power_ups)
+        if not self.power_ups:
+            self.make_power_up()
+        self._check_PU_bottom()
+    def _check_PU_bottom(self):
+        screen_rect = self.screen.get_rect()
+        for power_up in self.power_ups.sprites():
+            if power_up.rect.bottom >= screen_rect.bottom:
+                self.power_ups.empty()
+
+
+    def draw_PU(self):
+        self.power_ups.draw(self.screen)
+
+
 
     def update_screen(self):
         """Update images on the screen, and flip to the new screen"""
@@ -170,7 +192,11 @@ class HVM:
             round.draw_bullet()
         self.advanced_health()
         self.tank.draw_lives()
-        self.power_up.draw_powerup()
+        # w = random.randint(1, 10)
+        # if w == 7:
+        self.draw_PU()
+        self.power_ups.update()
+
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 

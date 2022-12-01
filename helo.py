@@ -1,9 +1,11 @@
 
 import pygame
-class Helo:
+from pygame.sprite import Sprite
+class Helo(Sprite):
     """A class to manage the ship"""
     def __init__(self, HVM_game):
         """Initialize the ship and set its starting position."""
+        super().__init__()
         self.screen = HVM_game.screen
         self.screen_rect = HVM_game.screen.get_rect()
         #Load the ship image and get its rect.

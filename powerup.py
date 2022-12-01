@@ -24,7 +24,7 @@ class Health_power(Sprite):
         self.y = float(self.rect.y)
 
     def update(self):
-        """move the bullet up the screen"""
+        """move the PU down the screen"""
         self.y += 1
         self.rect.y = self.y
 
