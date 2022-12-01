@@ -9,6 +9,7 @@ from helo import Helo
 from tank import Tank
 from round import Round
 from health_bar_lable import Lable
+from tank_lives_lable import TLable
 
 class HVM:
     def __init__(self):
@@ -32,6 +33,7 @@ class HVM:
         #makes the play button
         self.play_button = Button(self, "Press to Play")
         self.health_lable = Lable(self, "Castle Health")
+        self.tank_lable = TLable(self, "Tank Lives")
     def run_game(self):
         while True:
             self.check_events()
@@ -47,6 +49,10 @@ class HVM:
         for bullet in self.bullets.copy():
             if bullet.rect.left > self.screen_rect.right:
                 self.bullets.remove(bullet)
+            if bullet.rect.colliderect(self.tank.rect.x, self.tank.rect.y, 82, 60):
+                self.tank.tank_health -= 10
+                self.bullets.remove(bullet)
+                print(f"{self.tank.tank_health   }")
 
     def _update_rounds(self):
         self.rounds.update()
@@ -148,13 +154,17 @@ class HVM:
         if not self.stats.game_active:
             self.play_button.draw_button()
             self.health_lable.draw_button()
+            self.tank_lable.draw_button()
+        #draws lables for health and lives left
         if self.stats.game_active:
             self.health_lable.draw_button()
+            self.tank_lable.draw_button()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         for round in self.rounds.sprites():
             round.draw_bullet()
         self.advanced_health()
+        self.tank.draw_lives()
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 

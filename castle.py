@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
+import sys
 
 
 class Castle(Sprite):
@@ -24,18 +25,21 @@ class Castle(Sprite):
     def draw(self, surface):
         if self.current_health <= 0:
             self.image = self.destroyed
+            sys.exit()
         elif self.current_health < 1000:
             self.image = self.heavy_dam
         elif self.current_health< 2000:
             self.image = self.light_dam
         elif self.current_health <= 3000:
             self.image = self.undam
-        elif self.current_health <= 0:
-            self.game_active = False
         surface.blit(self.image, (0, 500))
     def get_damage(self):
         if self.target_health > 0:
             self.target_health -= 5
+            self.current_health = self.target_health
+    def get_health(self):
+        if self.target_health > 0:
+            self.target_health += 5
             self.current_health = self.target_health
 
 

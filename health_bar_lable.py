@@ -25,4 +25,4 @@ class Lable:
 
     def draw_button(self):
         #draws a blank button then the msg
-        self.screen.blit(self.msg_image, (110,))
+        self.screen.blit(self.msg_image, (110,0))
