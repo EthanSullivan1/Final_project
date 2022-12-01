@@ -1,6 +1,6 @@
 import sys
 import pygame
-from time import sleep
+import time
 import random
 from settings import Settings
 from castle import Castle
@@ -31,6 +31,9 @@ class HVM:
         self.round = Round(self)
         self.power_up = Health_power(self)
         self.power_ups = pygame.sprite.Group()
+        self.clock = pygame.time.Clock()
+        self.t = 0
+
 
 
 
@@ -42,13 +45,17 @@ class HVM:
         while True:
             self.check_events()
             if self.stats.game_active:
+                self.Clock()
                 self.helo.update()
-                self._check_helo_PU_collissions()
                 self.tank.update()
                 self._update_bullets()
                 self._update_rounds()
+                self._check_helo_PU_collissions()
 
             self.update_screen()
+    def Clock(self):
+        self.clicks = pygame.time.get_ticks()
+        print(self.clicks)
     def _update_bullets(self):
         self.bullets.update()
         #get rid of gone bullets
@@ -145,22 +152,29 @@ class HVM:
         pygame.draw.rect(self.screen,(0,255,0), health_bar_rect)
         pygame.draw.rect(self.screen, transition_color, transition_bar_rect)
         pygame.draw.rect(self.screen, (0, 0, 0),(10,45,self.castle.health_bar_length,25),4)
+
     def make_power_up(self):
         power_up = Health_power(self)
         self.power_up.rect.x = random.randint(0, 1000)
         self.power_up.rect.y = 0
         self.power_ups.add(power_up)
+
     def _check_helo_PU_collissions(self):
         PU_collisions = pygame.sprite.spritecollideany(self.helo, self.power_ups)
         if not self.power_ups:
-            self.make_power_up()
+            if self.clicks >= self.t:
+                print("made")
+                self.make_power_up()
+                self.t += (random.randint(10, 15)*1000) + 11000
         self._check_PU_bottom()
+
+
     def _check_PU_bottom(self):
         screen_rect = self.screen.get_rect()
         for power_up in self.power_ups.sprites():
             if power_up.rect.bottom >= screen_rect.bottom:
                 self.power_ups.empty()
-
+                print("gone")
 
     def draw_PU(self):
         self.power_ups.draw(self.screen)
@@ -192,8 +206,6 @@ class HVM:
             round.draw_bullet()
         self.advanced_health()
         self.tank.draw_lives()
-        # w = random.randint(1, 10)
-        # if w == 7:
         self.draw_PU()
         self.power_ups.update()
 
