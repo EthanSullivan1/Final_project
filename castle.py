@@ -38,8 +38,8 @@ class Castle(Sprite):
             self.target_health -= 5
             self.current_health = self.target_health
     def get_health(self):
-        if self.target_health > 0:
-            self.target_health += 5
+        if self.target_health < self.max_health:
+            self.target_health += 220
             self.current_health = self.target_health
 
 

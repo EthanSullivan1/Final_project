@@ -55,7 +55,6 @@ class HVM:
             self.update_screen()
     def Clock(self):
         self.clicks = pygame.time.get_ticks()
-        print(self.clicks)
     def _update_bullets(self):
         self.bullets.update()
         #get rid of gone bullets
@@ -161,6 +160,10 @@ class HVM:
 
     def _check_helo_PU_collissions(self):
         PU_collisions = pygame.sprite.spritecollideany(self.helo, self.power_ups)
+        if PU_collisions:
+            self.castle.get_health()
+            self.power_ups.empty()
+            print(self.castle.current_health)
         if not self.power_ups:
             if self.clicks >= self.t:
                 print("made")
