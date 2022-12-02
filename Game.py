@@ -13,6 +13,9 @@ from round import Round
 from health_bar_lable import Lable
 from tank_lives_lable import TLable
 from powerup import Health_power
+from s_screen import Start_screen
+from i_screen import I_screen
+
 class HVM:
     def __init__(self):
         pygame.init()
@@ -34,6 +37,8 @@ class HVM:
         self.clock = pygame.time.Clock()
         self.t = 0
 
+        self.INS = I_screen()
+
 
 
 
@@ -41,6 +46,7 @@ class HVM:
         self.play_button = Button(self, "Press to Play")
         self.health_lable = Lable(self, "Castle Health")
         self.tank_lable = TLable(self, "Tank Lives")
+        self.instructions = Start_screen(self, "Instructions")
     def run_game(self):
         while True:
             self.check_events()
@@ -54,7 +60,7 @@ class HVM:
 
             self.update_screen()
     def Clock(self):
-        self.clicks = pygame.time.get_ticks()
+        self.clicks =  pygame.time.get_ticks()
     def _update_bullets(self):
         self.bullets.update()
         #get rid of gone bullets
@@ -88,6 +94,7 @@ class HVM:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
+                self._check_instruction_button(mouse_pos)
     def _check_play_button(self, mouse_pos):
         """starts the game when player clicks on start"""
         if self.play_button.rect.collidepoint(mouse_pos):
@@ -182,6 +189,11 @@ class HVM:
     def draw_PU(self):
         self.power_ups.draw(self.screen)
 
+    def _check_instruction_button(self, mouse_pos):
+        """starts the game when player clicks on start"""
+        if self.instructions.rect.collidepoint(mouse_pos):
+            self.INS.draw()
+            time.sleep(5)
 
 
     def update_screen(self):
@@ -190,25 +202,27 @@ class HVM:
         DEFAULT_IMAGE_SIZE = (1280, 720)
         image = pygame.transform.scale(background, DEFAULT_IMAGE_SIZE)
         # redraw the screen during each pass through the loop
-        self.screen.blit(image, (0,0))
-        self.castle.draw(self.screen)
-        self.helo.blitme()
-        self.tank.blitme()
         #draws the button is the game is inactive
         if not self.stats.game_active:
+            #Start_screen.
+            self.instructions.draw_button()
+            #self.controls.draw_buton()
             self.play_button.draw_button()
-            self.health_lable.draw_button()
-            self.tank_lable.draw_button()
+
         #draws lables for health and lives left
         if self.stats.game_active:
+            self.screen.blit(image, (0, 0))
+            self.castle.draw(self.screen)
+            self.helo.blitme()
+            self.tank.blitme()
             self.health_lable.draw_button()
             self.tank_lable.draw_button()
+            self.advanced_health()
+            self.tank.draw_lives()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         for round in self.rounds.sprites():
             round.draw_bullet()
-        self.advanced_health()
-        self.tank.draw_lives()
         self.draw_PU()
         self.power_ups.update()
 

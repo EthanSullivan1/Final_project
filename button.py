@@ -13,7 +13,8 @@ class Button:
 
         #Build the button rect and centers it
         self.rect = pygame.Rect(0,0, self.width, self.height)
-        self.rect.center = self.screen_rect.center
+        self.rect.centerx = self.screen_rect.centerx
+        self.rect.y = (self.screen_rect.centery) - 150
 
         #preps the button mesg
         self._prep_msg(msg)
