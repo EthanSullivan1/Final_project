@@ -1,3 +1,4 @@
+#imports all classes used so minimize size of main game file
 import sys
 import pygame
 import time
@@ -15,6 +16,9 @@ from tank_lives_lable import TLable
 from powerup import Health_power
 from s_screen import Start_screen
 from i_screen import I_screen
+from C_buton import C_button
+from C_screen import C_screen
+import sounds
 
 class HVM:
     def __init__(self):
@@ -36,8 +40,9 @@ class HVM:
         self.power_ups = pygame.sprite.Group()
         self.clock = pygame.time.Clock()
         self.t = 0
-
+        self.C_screen = C_screen()
         self.INS = I_screen()
+        self.sounds = sounds
 
 
 
@@ -47,6 +52,9 @@ class HVM:
         self.health_lable = Lable(self, "Castle Health")
         self.tank_lable = TLable(self, "Tank Lives")
         self.instructions = Start_screen(self, "Instructions")
+        self.control_button = C_button(self, "Game Controls")
+
+    #main game loop
     def run_game(self):
         while True:
             self.check_events()
@@ -57,10 +65,13 @@ class HVM:
                 self._update_bullets()
                 self._update_rounds()
                 self._check_helo_PU_collissions()
-
             self.update_screen()
+
     def Clock(self):
+        self.clicks = pygame.time.get_ticks()
         self.clicks =  pygame.time.get_ticks()
+
+    #updates bullet position (allows it to move across screen)
     def _update_bullets(self):
         self.bullets.update()
         #get rid of gone bullets
@@ -70,8 +81,10 @@ class HVM:
             if bullet.rect.colliderect(self.tank.rect.x, self.tank.rect.y, 82, 60):
                 self.tank.tank_health -= 10
                 self.bullets.remove(bullet)
+                self.sounds.boom(self)
                 print(f"{self.tank.tank_health}")
 
+    # updates round position (allows it to move across screen)
     def _update_rounds(self):
         self.rounds.update()
         # get rid of gone rounds and checks collisons
@@ -79,10 +92,12 @@ class HVM:
         for round in self.rounds.copy():
             if round.rect.colliderect(0, 500, 204, 182):
                 self.castle.get_damage()
+                self.sounds.boom(self)
                 print(f"{self.castle.current_health}")
             if round.rect.right < self.screen_rect.left:
                 self.rounds.remove(round)
 
+    #checks all keydown/up/mouse events
     def check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,11 +110,16 @@ class HVM:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
                 self._check_instruction_button(mouse_pos)
+                self._check_control_button(mouse_pos)
+
+    #checks to see if play button is clicked
     def _check_play_button(self, mouse_pos):
         """starts the game when player clicks on start"""
         if self.play_button.rect.collidepoint(mouse_pos):
             self.stats.game_active = True
+            self.sounds.boo(self)
 
+    #sees if keys are released
     def _check_keyup_events(self,event):
         #respond to key releases
         if event.key == pygame.K_RIGHT:
@@ -114,6 +134,8 @@ class HVM:
             self.helo.moving_up = False
         elif event.key == pygame.K_DOWN:
             self.helo.moving_down = False
+
+    #sees if keys/ mouse is pressed
     def _check_keydown_events(self,event):
         #respond to key presses
         if event.key == pygame.K_RIGHT:
@@ -135,17 +157,21 @@ class HVM:
         elif event.key == pygame.K_q:
             sys.exit()
 
+    #shoots a bullet
     def _fire_bullet(self):
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+            self.sounds.zoom(self)
 
+    #shoots a round
     def _fire_round(self):
         if len(self.rounds) < self.settings.tank_rounds_allowed:
             new_round = Round(self)
             self.rounds.add(new_round)
+            self.sounds.zoom(self)
 
-#creates and updates halth bar based in castle health
+    #creates and updates health bar based in castle health
     def advanced_health(self):
         transition_width = 0
         transition_color = (255,0,0)
@@ -159,26 +185,28 @@ class HVM:
         pygame.draw.rect(self.screen, transition_color, transition_bar_rect)
         pygame.draw.rect(self.screen, (0, 0, 0),(10,45,self.castle.health_bar_length,25),4)
 
+    #creates a power up at random x location along the x-axis
     def make_power_up(self):
         power_up = Health_power(self)
         self.power_up.rect.x = random.randint(0, 1000)
         self.power_up.rect.y = 0
         self.power_ups.add(power_up)
 
+    #sees if the Helo hits the power up
     def _check_helo_PU_collissions(self):
         PU_collisions = pygame.sprite.spritecollideany(self.helo, self.power_ups)
         if PU_collisions:
             self.castle.get_health()
             self.power_ups.empty()
+            self.sounds.bing(self)
             print(self.castle.current_health)
         if not self.power_ups:
             if self.clicks >= self.t:
-                print("made")
                 self.make_power_up()
                 self.t += (random.randint(10, 15)*1000) + 11000
         self._check_PU_bottom()
 
-
+    #gets rid of the power up once it goes off screen
     def _check_PU_bottom(self):
         screen_rect = self.screen.get_rect()
         for power_up in self.power_ups.sprites():
@@ -186,31 +214,44 @@ class HVM:
                 self.power_ups.empty()
                 print("gone")
 
+    #draws the powerup
     def draw_PU(self):
         self.power_ups.draw(self.screen)
 
+    #sees if instruction button is hit
     def _check_instruction_button(self, mouse_pos):
         """starts the game when player clicks on start"""
         if self.instructions.rect.collidepoint(mouse_pos):
             self.INS.draw()
             time.sleep(5)
 
+    #sees if control button is hit
+    def _check_control_button(self, mouse_pos):
+        """starts the game when player clicks on start"""
+        if self.control_button.rect.collidepoint(mouse_pos):
+            self.C_screen.draw()
+            time.sleep(5)
 
+
+    #updaets everything on the screen depednign on game_status and other factors
     def update_screen(self):
         """Update images on the screen, and flip to the new screen"""
         background = pygame.image.load("images/backgroundColorGrass.png")
         DEFAULT_IMAGE_SIZE = (1280, 720)
         image = pygame.transform.scale(background, DEFAULT_IMAGE_SIZE)
         # redraw the screen during each pass through the loop
+        self.screen.blit(image, (0,0))
+        self.castle.draw(self.screen)
+        self.helo.blitme()
+        self.tank.blitme()
         #draws the button is the game is inactive
         if not self.stats.game_active:
             #Start_screen.
             self.instructions.draw_button()
-            #self.controls.draw_buton()
+            self.control_button.draw_button()
             self.play_button.draw_button()
-
         #draws lables for health and lives left
-        if self.stats.game_active:
+        elif self.stats.game_active:
             self.screen.blit(image, (0, 0))
             self.castle.draw(self.screen)
             self.helo.blitme()
@@ -219,13 +260,16 @@ class HVM:
             self.tank_lable.draw_button()
             self.advanced_health()
             self.tank.draw_lives()
+            self.advanced_health()
+            self.tank.draw_lives()
+            self.draw_PU()
+            self.power_ups.update()
+            self.health_lable.draw_button()
+            self.tank_lable.draw_button()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         for round in self.rounds.sprites():
             round.draw_bullet()
-        self.draw_PU()
-        self.power_ups.update()
-
         # Make the most recently drawn screen visible.
         pygame.display.flip()
 
