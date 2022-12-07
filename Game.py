@@ -198,7 +198,7 @@ class HVM:
         if PU_collisions:
             self.castle.get_health()
             self.power_ups.empty()
-            self.sounds.bing(self)
+            self.sounds.bing(self)  #Grace helped with this
             print(self.castle.current_health)
         if not self.power_ups:
             if self.clicks >= self.t:
